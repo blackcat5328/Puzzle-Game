@@ -1,48 +1,70 @@
-window.initGame = (React, assetsUrl) => {
-  const { useState, useEffect } = React;
+// puzzle-game.js
 
-  const WhackAMole = ({ assetsUrl }) => {
-    const [score, setScore] = useState(0);
-    const [activeMole, setActiveMole] = useState(null);
+// Function to divide the image into 9 parts
+function divideImage(imageElement) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = imageElement.width;
+  canvas.height = imageElement.height;
+  ctx.drawImage(imageElement, 0, 0);
 
-    useEffect(() => {
-      const interval = setInterval(() => {
-        setActiveMole(Math.floor(Math.random() * 9));
-      }, 1000);
-      return () => clearInterval(interval);
-    }, []);
+  const parts = [];
+  const partWidth = canvas.width / 3;
+  const partHeight = canvas.height / 3;
 
-    const whackMole = (index) => {
-      if (index === activeMole) {
-        setScore(score + 1);
-        setActiveMole(null);
-      }
-    };
+  for (let y = 0; y < 3; y++) {
+    for (let x = 0; x < 3; x++) {
+      const partCanvas = document.createElement('canvas');
+      partCanvas.width = partWidth;
+      partCanvas.height = partHeight;
+      partCanvas.getContext('2d').drawImage(
+        canvas,
+        x * partWidth, y * partHeight,
+        partWidth, partHeight,
+        0, 0,
+        partWidth, partHeight
+      );
+      parts.push(partCanvas);
+    }
+  }
 
-    return React.createElement(
-      'div',
-      { className: "whack-a-mole" },
-      React.createElement('h2', null, "Whack-a-Mole"),
-      React.createElement('p', null, `Score: ${score}`),
-      React.createElement(
-        'div',
-        { className: "game-board" },
-        Array(9).fill().map((_, index) =>
-          React.createElement(
-            'div',
-            {
-              key: index,
-              className: `mole ${index === activeMole ? 'active' : ''}`,
-              onClick: () => whackMole(index)
-            },
-            index === activeMole && React.createElement('img', { src: `${assetsUrl}/mole.png`, alt: "Mole" })
-          )
-        )
-      )
-    );
-  };
+  return parts;
+}
 
-  return () => React.createElement(WhackAMole, { assetsUrl: assetsUrl });
-};
+// Function to shuffle the image parts
+function shuffleParts(parts) {
+  for (let i = parts.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [parts[i], parts[j]] = [parts[j], parts[i]];
+  }
+  return parts;
+}
 
-console.log('Whack-a-Mole game script loaded');
+// Function to combine the shuffled parts back into the original image
+function combineParts(parts) {
+  const canvas = document.createElement('canvas');
+  canvas.width = parts[0].width * 3;
+  canvas.height = parts[0].height * 3;
+  const ctx = canvas.getContext('2d');
+
+  let partIndex = 0;
+  for (let y = 0; y < 3; y++) {
+    for (let x = 0; x < 3; x++) {
+      ctx.drawImage(parts[partIndex], x * parts[0].width, y * parts[0].height);
+      partIndex++;
+    }
+  }
+
+  return canvas.toDataURL();
+}
+
+// Example usage
+const imageElement = document.getElementById('puzzle-image');
+const parts = divideImage(imageElement);
+const shuffledParts = shuffleParts(parts);
+const combinedImageData = combineParts(shuffledParts);
+
+// Display the combined image
+const combinedImageElement = new Image();
+combinedImageElement.src = combinedImageData;
+document.body.appendChild(combinedImageElement);
