@@ -1,3 +1,4 @@
+
 // This would be stored in the 'src' folder of the GitHub repository
 // whack-a-mole.js
 window.initGame = (React, assetsUrl) => {
