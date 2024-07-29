@@ -1,4 +1,4 @@
-window.initPhotoPuzzle = (React, assetsUrl) => {
+window.initGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
   const PhotoPuzzle = ({ assetsUrl }) => {
