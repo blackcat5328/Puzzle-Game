@@ -1,57 +1,48 @@
 window.initGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
-  const PuzzleGame = ({ assetsUrl }) => {
+  const WhackAMole = ({ assetsUrl }) => {
     const [score, setScore] = useState(0);
-    const [tiles, setTiles] = useState([]);
-    const [correctTile, setCorrectTile] = useState(null);
+    const [activeMole, setActiveMole] = useState(null);
 
     useEffect(() => {
-      const initialTiles = Array(8).fill().map((_, i) => ({
-        id: i,
-        image: `${assetsUrl}/random-photo.jpg`
-      }));
-      const repeatedTile = {
-        id: 8,
-        image: `${assetsUrl}/random-photo.jpg`
-      };
-      const shuffledTiles = [...initialTiles, repeatedTile].sort(() => Math.random() - 0.5);
-      setTiles(shuffledTiles);
-      setCorrectTile(repeatedTile.id);
-    }, [assetsUrl]);
+      const interval = setInterval(() => {
+        setActiveMole(Math.floor(Math.random() * 9));
+      }, 1000);
+      return () => clearInterval(interval);
+    }, []);
 
-    const handleTileClick = (id) => {
-      if (id === correctTile) {
+    const whackMole = (index) => {
+      if (index === activeMole) {
         setScore(score + 1);
-        setTiles((prevTiles) => prevTiles.map((tile) => (tile.id === id ? { ...tile, image: `${assetsUrl}/random-photo.jpg` } : tile)));
-        setCorrectTile(Math.floor(Math.random() * 9));
+        setActiveMole(null);
       }
     };
 
     return React.createElement(
       'div',
-      { className: "puzzle-game" },
-      React.createElement('h2', null, "Puzzle Game"),
+      { className: "whack-a-mole" },
+      React.createElement('h2', null, "Whack-a-Mole"),
       React.createElement('p', null, `Score: ${score}`),
       React.createElement(
         'div',
         { className: "game-board" },
-        tiles.map((tile) =>
+        Array(9).fill().map((_, index) =>
           React.createElement(
             'div',
             {
-              key: tile.id,
-              className: "tile",
-              onClick: () => handleTileClick(tile.id)
+              key: index,
+              className: `mole ${index === activeMole ? 'active' : ''}`,
+              onClick: () => whackMole(index)
             },
-            React.createElement('img', { src: tile.image, alt: `Tile ${tile.id}` })
+            index === activeMole && React.createElement('img', { src: `${assetsUrl}/mole.png`, alt: "Mole" })
           )
         )
       )
     );
   };
 
-  return () => React.createElement(PuzzleGame, { assetsUrl: assetsUrl });
+  return () => React.createElement(WhackAMole, { assetsUrl: assetsUrl });
 };
 
-console.log('Puzzle Game script loaded');
+console.log('Whack-a-Mole game script loaded');
