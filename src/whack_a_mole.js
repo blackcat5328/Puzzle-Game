@@ -1,31 +1,58 @@
+// This would be stored in the 'src' folder of the GitHub repository
+// puzzle-game.js
 window.initGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
-  const PuzzleGame = () => {
-    const [puzzleGrid, setPuzzleGrid] = useState([]);
-    const [activePiece, setActivePiece] = useState(null);
-    const [solvedPieces, setSolvedPieces] = useState(0);
-    const [isShuffled, setIsShuffled] = useState(false);
+  const PuzzleGame = ({ assetsUrl }) => {
     const [score, setScore] = useState(0);
-    const [randomPhoto, setRandomPhoto] = useState(null);
+    const [activePiece, setActivePiece] = useState(null);
+    const [puzzlePieces, setPuzzlePieces] = useState([]);
+    const [shuffledPieces, setShuffledPieces] = useState([]);
+    const [solvedPieces, setSolvedPieces] = useState(0);
 
-    // Function to initialize the puzzle grid
-    const initializePuzzle = () => {
-      // ... (existing code)
-      fetchRandomPhoto();
+    useEffect(() => {
+      // Fetch and prepare the puzzle pieces
+      const puzzlePieces = generatePuzzlePieces();
+      setPuzzlePieces(puzzlePieces);
+      shufflePuzzle(puzzlePieces);
+    }, []);
+
+    const generatePuzzlePieces = () => {
+      // Fetch a random photo from Unsplash or use a predefined one
+      const randomPhoto = `${assetsUrl}/random-photo.jpg`;
+
+      // Divide the photo into 9 puzzle pieces
+      const puzzlePieces = [];
+      for (let i = 0; i < 9; i++) {
+        puzzlePieces.push({
+          index: i,
+          image: randomPhoto,
+          position: {
+            row: Math.floor(i / 3),
+            col: i % 3,
+          },
+        });
+      }
+
+      // Duplicate one of the puzzle pieces
+      const duplicateIndex = Math.floor(Math.random() * 9);
+      puzzlePieces.push({
+        index: 9,
+        image: randomPhoto,
+        position: {
+          row: Math.floor(duplicateIndex / 3),
+          col: duplicateIndex % 3,
+        },
+      });
+
+      return puzzlePieces;
     };
 
-    // Function to fetch a random photo from Unsplash
-    const fetchRandomPhoto = async () => {
-      // ... (existing code)
+    const shufflePuzzle = (pieces) => {
+      const shuffledPieces = [...pieces].sort(() => Math.random() - 0.5);
+      setShuffledPieces(shuffledPieces);
     };
 
-    // Function to shuffle the puzzle pieces
-    const shufflePuzzle = () => {
-      // ... (existing code)
-    };
-
-    // Function to handle piece click
     const handlePieceClick = (piece) => {
       if (activePiece === null) {
         setActivePiece(piece);
@@ -41,42 +68,25 @@ window.initGame = (React, assetsUrl) => {
       }
     };
 
-    useEffect(() => {
-      initializePuzzle();
-    }, []);
-
     return React.createElement(
       'div',
-      { className: 'puzzle-container' },
-      randomPhoto &&
-        React.createElement(
-          'div',
-          { className: 'random-photo' },
-          React.createElement('img', { src: randomPhoto, alt: 'Random Photo' })
-        ),
+      { className: 'puzzle-game' },
+      React.createElement('h2', null, 'Puzzle Game'),
+      React.createElement('p', null, `Score: ${score}`),
       React.createElement(
         'div',
-        { className: 'puzzle-grid' },
-        puzzleGrid.map((row, rowIndex) =>
+        { className: 'game-board' },
+        shuffledPieces.map((piece, index) =>
           React.createElement(
             'div',
-            { className: 'puzzle-row', key: `row-${rowIndex}` },
-            row.map((piece, colIndex) =>
-              React.createElement(
-                'div',
-                {
-                  className: `puzzle-piece ${
-                    activePiece?.position.row === piece.position.row &&
-                    activePiece?.position.col === piece.position.col
-                      ? 'active'
-                      : ''
-                  }`,
-                  key: `piece-${rowIndex}-${colIndex}`,
-                  onClick: () => handlePieceClick(piece),
-                },
-                piece.value
-              )
-            )
+            {
+              key: `piece-${index}`,
+              className: `puzzle-piece ${
+                activePiece?.index === piece.index ? 'active' : ''
+              }`,
+              onClick: () => handlePieceClick(piece),
+            },
+            React.createElement('img', { src: piece.image, alt: `Puzzle Piece ${piece.index}` })
           )
         )
       ),
@@ -84,17 +94,12 @@ window.initGame = (React, assetsUrl) => {
         'button',
         {
           className: 'shuffle-button',
-          onClick: shufflePuzzle,
-          disabled: solvedPieces === puzzleGrid.length,
+          onClick: () => shufflePuzzle(puzzlePieces),
+          disabled: solvedPieces === shuffledPieces.length,
         },
         'Shuffle Puzzle'
       ),
-      React.createElement(
-        'div',
-        { className: 'score-display' },
-        `Score: ${score}`
-      ),
-      solvedPieces === puzzleGrid.length &&
+      solvedPieces === shuffledPieces.length &&
         React.createElement(
           'div',
           { className: 'puzzle-solved' },
@@ -103,5 +108,7 @@ window.initGame = (React, assetsUrl) => {
     );
   };
 
-  return PuzzleGame;
+  return () => React.createElement(PuzzleGame, { assetsUrl: assetsUrl });
 };
+
+console.log('Puzzle Game script loaded');
