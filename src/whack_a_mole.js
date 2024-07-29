@@ -1,51 +1,79 @@
-
-// This would be stored in the 'src' folder of the GitHub repository
-// whack-a-mole.js
 window.initGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
-  const WhackAMole = ({ assetsUrl }) => {
-    const [score, setScore] = useState(0);
-    const [activeMole, setActiveMole] = useState(null);
+  const PuzzleGame = () => {
+    const [puzzleGrid, setPuzzleGrid] = useState([]);
+    const [activePiece, setActivePiece] = useState(null);
+    const [solvedPieces, setSolvedPieces] = useState(0);
 
-    useEffect(() => {
-      const interval = setInterval(() => {
-        setActiveMole(Math.floor(Math.random() * 9));
-      }, 1000);
-      return () => clearInterval(interval);
-    }, []);
+    // Function to initialize the puzzle grid
+    const initializePuzzle = () => {
+      const puzzleImage = new Image();
+      puzzleImage.src = `${assetsUrl}/puzzle-image.jpg`; // Replace with your puzzle image URL
+      puzzleImage.onload = () => {
+        const width = puzzleImage.width / 3;
+        const height = puzzleImage.height / 3;
+        const grid = [];
+        for (let row = 0; row < 3; row++) {
+          for (let col = 0; col < 3; col++) {
+            grid.push({
+              id: `piece-${row * 3 + col}`,
+              left: col * width,
+              top: row * height,
+              width,
+              height,
+              position: { row, col },
+            });
+          }
+        }
+        setPuzzleGrid(grid);
+      };
+    };
 
-    const whackMole = (index) => {
-      if (index === activeMole) {
-        setScore(score + 1);
-        setActiveMole(null);
+    // Function to handle piece click
+    const handlePieceClick = (piece) => {
+      if (activePiece === null) {
+        setActivePiece(piece);
+      } else if (
+        activePiece.position.row === piece.position.row &&
+        activePiece.position.col === piece.position.col
+      ) {
+        setActivePiece(null);
+        setSolvedPieces((prevSolved) => prevSolved + 1);
+      } else {
+        setActivePiece(null);
       }
     };
 
-    return React.createElement(
-      'div',
-      { className: "whack-a-mole" },
-      React.createElement('h2', null, "Whack-a-Mole"),
-      React.createElement('p', null, `Score: ${score}`),
-      React.createElement(
-        'div',
-        { className: "game-board" },
-        Array(9).fill().map((_, index) =>
-          React.createElement(
-            'div',
-            {
-              key: index,
-              className: `mole ${index === activeMole ? 'active' : ''}`,
-              onClick: () => whackMole(index)
-            },
-            index === activeMole && React.createElement('img', { src: `${assetsUrl}/mole.png`, alt: "Mole" })
-          )
-        )
-      )
+    useEffect(() => {
+      initializePuzzle();
+    }, []);
+
+    return (
+      <div className="puzzle-container">
+        {puzzleGrid.map((piece) => (
+          <div
+            key={piece.id}
+            className={`puzzle-piece ${activePiece === piece ? 'active' : ''} ${
+              solvedPieces === 9 ? 'solved' : ''
+            }`}
+            style={{
+              left: piece.left,
+              top: piece.top,
+              width: piece.width,
+              height: piece.height,
+              backgroundImage: `url(${assetsUrl}/puzzle-image.jpg)`,
+              backgroundPosition: `-${piece.left}px -${piece.top}px`,
+            }}
+            onClick={() => handlePieceClick(piece)}
+          />
+        ))}
+        {solvedPieces === 9 && (
+          <div className="puzzle-solved">Congratulations! You solved the puzzle.</div>
+        )}
+      </div>
     );
   };
 
-  return () => React.createElement(WhackAMole, { assetsUrl: assetsUrl });
+  return PuzzleGame;
 };
-
-console.log('Whack-a-Mole game script loaded');
