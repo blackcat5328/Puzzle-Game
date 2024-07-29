@@ -1,92 +1,96 @@
+// This would be stored in the 'src' folder of the GitHub repository
+// puzzle-game.js
 window.initGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
-  const PhotoPuzzle = ({ assetsUrl }) => {
-    const [puzzlePieces, setPuzzlePieces] = useState([]);
-    const [shuffledPuzzlePieces, setShuffledPuzzlePieces] = useState([]);
-    const [repeatedPieceIndex, setRepeatedPieceIndex] = useState(-1);
+  const PuzzleGame = ({ assetsUrl }) => {
+    const [pieces, setPieces] = useState([]);
     const [score, setScore] = useState(0);
+    const [solved, setSolved] = useState(false);
 
     useEffect(() => {
-      // Load the image
+      // Load the image and divide it into 9 parts
       const image = new Image();
-      image.src = `${assetsUrl}/random-photo.jpg`;
+      image.src = `${assetsUrl}/puzzle-image.jpg`;
       image.onload = () => {
-        // Divide the image into 9 parts
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0);
+
+        const pieceWidth = image.width / 3;
+        const pieceHeight = image.height / 3;
+
         const pieces = [];
-        for (let i = 0; i < 3; i++) {
-          for (let j = 0; j < 3; j++) {
+        for (let y = 0; y < 3; y++) {
+          for (let x = 0; x < 3; x++) {
             const canvas = document.createElement('canvas');
-            canvas.width = image.width / 3;
-            canvas.height = image.height / 3;
-            const context = canvas.getContext('2d');
-            context.drawImage(
+            canvas.width = pieceWidth;
+            canvas.height = pieceHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(
               image,
-              j * image.width / 3,
-              i * image.height / 3,
-              image.width / 3,
-              image.height / 3,
+              x * pieceWidth,
+              y * pieceHeight,
+              pieceWidth,
+              pieceHeight,
               0,
               0,
-              canvas.width,
-              canvas.height
+              pieceWidth,
+              pieceHeight
             );
             pieces.push(canvas.toDataURL());
           }
         }
-        setPuzzlePieces(pieces);
-        shufflePuzzle();
+
+        // Randomly arrange the pieces, including one repeating piece
+        const shuffledPieces = [...pieces, pieces[Math.floor(Math.random() * 9)]].sort(
+          () => Math.random() - 0.5
+        );
+        setPieces(shuffledPieces);
       };
     }, [assetsUrl]);
 
-    const shufflePuzzle = () => {
-      const shuffledPieces = [...puzzlePieces];
-      shuffledPieces.sort(() => Math.random() - 0.5);
-
-      // Choose a random piece to repeat
-      const repeatedIndex = Math.floor(Math.random() * 9);
-      shuffledPieces[repeatedIndex] = shuffledPieces[Math.floor(Math.random() * 8)];
-
-      setShuffledPuzzlePieces(shuffledPieces);
-      setRepeatedPieceIndex(repeatedIndex);
-    };
-
-    const handlePieceClick = (index) => {
-      if (index === repeatedPieceIndex) {
+    const handleClick = (index) => {
+      if (index === pieces.length - 1) {
         setScore(score + 1);
-        shufflePuzzle();
+        if (score === 8) {
+          setSolved(true);
+        } else {
+          const shuffledPieces = [...pieces].sort(() => Math.random() - 0.5);
+          setPieces(shuffledPieces);
+        }
+      } else {
+        setScore(score - 1);
       }
     };
 
     return React.createElement(
       'div',
-      { className: 'photo-puzzle' },
-      React.createElement('h2', null, 'Photo Puzzle'),
+      { className: 'puzzle-game' },
+      React.createElement('h2', null, 'Puzzle Game'),
       React.createElement('p', null, `Score: ${score}`),
       React.createElement(
         'div',
-        { className: 'puzzle-container' },
-        shuffledPuzzlePieces.map((piece, index) =>
+        { className: 'game-board' },
+        pieces.map((piece, index) =>
           React.createElement(
             'div',
             {
               key: index,
               className: 'puzzle-piece',
-              style: { backgroundImage: `url(${piece})` },
-              onClick: () => handlePieceClick(index)
-            }
+              onClick: () => handleClick(index)
+            },
+            React.createElement('img', { src: piece, alt: `Piece ${index}` })
           )
         )
       ),
-      React.createElement(
-        'button',
-        { onClick: shufflePuzzle },
-        'Shuffle'
-      )
+      solved && React.createElement('h3', null, 'Congratulations! You solved the puzzle!')
     );
   };
 
-  return () => React.createElement(PhotoPuzzle, { assetsUrl: assetsUrl });
+  return () => React.createElement(PuzzleGame, { assetsUrl: assetsUrl });
 };
 
-console.log('Photo Puzzle game script loaded');
+console.log('Puzzle game script loaded');
