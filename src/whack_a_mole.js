@@ -10,7 +10,7 @@ window.initGame = (React, assetsUrl) => {
     useEffect(() => {
       // Initialize the puzzle tiles
       const tiles = Array(9).fill().map((_, index) => ({
-        image: `${assetsUrl}/random-photo-${index + 1}.jpg`,
+        image: `${assetsUrl}/puzzle-image.jpg`,
         index
       }));
 
