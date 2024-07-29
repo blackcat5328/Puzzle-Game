@@ -52,29 +52,25 @@ window.initGame = (React, assetsUrl) => {
     return React.createElement(
       'div',
       { className: 'puzzle-container' },
-      React.createElement(
-        'div',
-        { className: 'puzzle-grid' },
-        puzzleGrid.map((piece) =>
-          React.createElement(
-            'div',
-            {
-              key: piece.id,
-              className: `puzzle-piece ${activePiece === piece ? 'active' : ''} ${
-                solvedPieces === 9 ? 'solved' : ''
-              }`,
-              style: {
-                left: piece.left,
-                top: piece.top,
-                width: piece.width,
-                height: piece.height,
-                backgroundImage: `url(${assetsUrl}/puzzle-image.jpg)`,
-                backgroundPosition: `-${piece.left}px -${piece.top}px`,
-              },
-              onClick: () => handlePieceClick(piece),
+      puzzleGrid.map((piece) =>
+        React.createElement(
+          'div',
+          {
+            key: piece.id,
+            className: `puzzle-piece ${activePiece === piece ? 'active' : ''} ${
+              solvedPieces === 9 ? 'solved' : ''
+            }`,
+            style: {
+              left: piece.left,
+              top: piece.top,
+              width: piece.width,
+              height: piece.height,
+              backgroundImage: `url(${assetsUrl}/puzzle-image.jpg)`,
+              backgroundPosition: `-${piece.left}px -${piece.top}px`,
             },
-            null
-          )
+            onClick: () => handlePieceClick(piece),
+          },
+          null
         )
       ),
       solvedPieces === 9 &&
