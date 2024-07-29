@@ -7,10 +7,10 @@ window.initGame = (React, assetsUrl) => {
     const [solvedPieces, setSolvedPieces] = useState(0);
     const [isShuffled, setIsShuffled] = useState(false);
 
-    // Fonction pour initialiser la grille de puzzle
+    // Function to initialize the puzzle grid
     const initializePuzzle = () => {
       const puzzleImage = new Image();
-      puzzleImage.src = `${assetsUrl}/puzzle-image.jpg`; // Remplacez par l'URL de votre image de puzzle
+      puzzleImage.src = `${assetsUrl}/puzzle-image.jpg`; // Replace with your puzzle image URL
       puzzleImage.onload = () => {
         const width = puzzleImage.width / 3;
         const height = puzzleImage.height / 3;
@@ -31,14 +31,14 @@ window.initGame = (React, assetsUrl) => {
       };
     };
 
-    // Fonction pour mélanger les pièces de puzzle
+    // Function to shuffle the puzzle pieces
     const shufflePuzzle = () => {
       const shuffledGrid = [...puzzleGrid].sort(() => Math.random() - 0.5);
       setPuzzleGrid(shuffledGrid);
       setIsShuffled(true);
     };
 
-    // Fonction pour gérer le clic sur une pièce
+    // Function to handle piece click
     const handlePieceClick = (piece) => {
       if (activePiece === null) {
         setActivePiece(piece);
@@ -92,13 +92,13 @@ window.initGame = (React, assetsUrl) => {
           onClick: shufflePuzzle,
           disabled: solvedPieces === 9,
         },
-        'Mélanger le puzzle'
+        'Shuffle Puzzle'
       ),
       solvedPieces === 9 &&
         React.createElement(
           'div',
           { className: 'puzzle-solved' },
-          'Félicitations ! Vous avez résolu le puzzle.'
+          'Congratulations! You solved the puzzle.'
         )
     );
   };
