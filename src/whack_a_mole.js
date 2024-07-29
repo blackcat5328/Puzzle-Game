@@ -1,114 +1,48 @@
-// This would be stored in the 'src' folder of the GitHub repository
-// puzzle-game.js
 window.initGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
-  const PuzzleGame = ({ assetsUrl }) => {
+  const WhackAMole = ({ assetsUrl }) => {
     const [score, setScore] = useState(0);
-    const [activePiece, setActivePiece] = useState(null);
-    const [puzzlePieces, setPuzzlePieces] = useState([]);
-    const [shuffledPieces, setShuffledPieces] = useState([]);
-    const [solvedPieces, setSolvedPieces] = useState(0);
+    const [activeMole, setActiveMole] = useState(null);
 
     useEffect(() => {
-      // Fetch and prepare the puzzle pieces
-      const puzzlePieces = generatePuzzlePieces();
-      setPuzzlePieces(puzzlePieces);
-      shufflePuzzle(puzzlePieces);
+      const interval = setInterval(() => {
+        setActiveMole(Math.floor(Math.random() * 9));
+      }, 1000);
+      return () => clearInterval(interval);
     }, []);
 
-    const generatePuzzlePieces = () => {
-      // Fetch a random photo from Unsplash or use a predefined one
-      const randomPhoto = `${assetsUrl}/random-photo.jpg`;
-
-      // Divide the photo into 9 puzzle pieces
-      const puzzlePieces = [];
-      for (let i = 0; i < 9; i++) {
-        puzzlePieces.push({
-          index: i,
-          image: randomPhoto,
-          position: {
-            row: Math.floor(i / 3),
-            col: i % 3,
-          },
-        });
-      }
-
-      // Duplicate one of the puzzle pieces
-      const duplicateIndex = Math.floor(Math.random() * 9);
-      puzzlePieces.push({
-        index: 9,
-        image: randomPhoto,
-        position: {
-          row: Math.floor(duplicateIndex / 3),
-          col: duplicateIndex % 3,
-        },
-      });
-
-      return puzzlePieces;
-    };
-
-    const shufflePuzzle = (pieces) => {
-      const shuffledPieces = [...pieces].sort(() => Math.random() - 0.5);
-      setShuffledPieces(shuffledPieces);
-    };
-
-    const handlePieceClick = (piece) => {
-      if (activePiece === null) {
-        setActivePiece(piece);
-      } else if (
-        activePiece.position.row === piece.position.row &&
-        activePiece.position.col === piece.position.col
-      ) {
-        setActivePiece(null);
-        setSolvedPieces((prevSolved) => prevSolved + 1);
-        setScore((prevScore) => prevScore + 1);
-      } else {
-        setActivePiece(null);
+    const whackMole = (index) => {
+      if (index === activeMole) {
+        setScore(score + 1);
+        setActiveMole(null);
       }
     };
 
     return React.createElement(
       'div',
-      { className: 'puzzle-game' },
-      React.createElement('h2', null, 'Puzzle Game'),
+      { className: "whack-a-mole" },
+      React.createElement('h2', null, "Whack-a-Mole"),
       React.createElement('p', null, `Score: ${score}`),
       React.createElement(
         'div',
-        { className: 'game-board' },
-        shuffledPieces.map((piece, index) =>
+        { className: "game-board" },
+        Array(9).fill().map((_, index) =>
           React.createElement(
             'div',
             {
-              key: `piece-${index}`,
-              className: `puzzle-piece ${
-                activePiece?.index === piece.index ? 'active' : ''
-              }`,
-              onClick: () => handlePieceClick(piece),
+              key: index,
+              className: `mole ${index === activeMole ? 'active' : ''}`,
+              onClick: () => whackMole(index)
             },
-            React.createElement('img', { src: piece.image, alt: `Puzzle Piece ${piece.index}` })
+            index === activeMole && React.createElement('img', { src: `${assetsUrl}/random-photo.jpg`, alt: "Mole" })
           )
         )
-      ),
-      React.createElement(
-        'button',
-        {
-          className: 'shuffle-button',
-          onClick: () => shufflePuzzle(puzzlePieces),
-          disabled: solvedPieces === shuffledPieces.length,
-        },
-        'Shuffle Puzzle'
-      ),
-      solvedPieces === shuffledPieces.length &&
-        React.createElement(
-          'div',
-          { className: 'puzzle-solved' },
-          'Congratulations! You have solved the puzzle.'
-        )
+      )
     );
   };
 
-  return () => React.createElement(PuzzleGame, { assetsUrl: assetsUrl });
+  return () => React.createElement(WhackAMole, { assetsUrl: assetsUrl });
 };
 
-console.log('Puzzle Game script loaded');
+console.log('Whack-a-Mole game script loaded');
