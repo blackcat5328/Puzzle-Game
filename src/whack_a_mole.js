@@ -1,53 +1,98 @@
-window.initGame = (React, assetsUrl) => {
+// This would be stored in the 'src' folder of the GitHub repository
+// puzzle-game.js
+window.initPuzzleGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
   const PuzzleGame = ({ assetsUrl }) => {
     const [score, setScore] = useState(0);
-    const [tiles, setTiles] = useState([]);
-    const [blankTileIndex, setBlankTileIndex] = useState(null);
+    const [puzzlePieces, setPuzzlePieces] = useState([]);
+    const [emptySlot, setEmptySlot] = useState(null);
 
     useEffect(() => {
-      // Load the image and divide it into 9 tiles
-      const img = new Image();
-      img.crossOrigin = 'anonymous'; // Add this line
-      img.src = `${assetsUrl}/random-photo.jpg`;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
+      // Initialize the puzzle pieces
+      const pieces = Array(9)
+        .fill()
+        .map((_, index) => index);
+      pieces.push(pieces.splice(Math.floor(Math.random() * 8), 1)[0]);
+      setPuzzlePieces(pieces);
+      setEmptySlot(8);
+    }, []);
 
-        const tileSize = img.width / 3;
-        const tiles = [];
-        for (let y = 0; y < 3; y++) {
-          for (let x = 0; x < 3; x++) {
-            const canvas2 = document.createElement('canvas');
-            canvas2.width = tileSize;
-            canvas2.height = tileSize;
-            const ctx2 = canvas2.getContext('2d');
-            ctx2.drawImage(canvas, x * tileSize, y * tileSize, tileSize, tileSize, 0, 0, tileSize, tileSize);
-            tiles.push(canvas2.toDataURL('image/jpeg'));
-          }
+    const shufflePuzzle = () => {
+      const newPieces = [...puzzlePieces];
+      for (let i = newPieces.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newPieces[i], newPieces[j]] = [newPieces[j], newPieces[i]];
+      }
+      setPuzzlePieces(newPieces);
+      setEmptySlot(newPieces.indexOf(8));
+    };
+
+    const movePiece = (index) => {
+      if (
+        (index === emptySlot - 3 && emptySlot % 3 !== 0) ||
+        (index === emptySlot + 3 && emptySlot % 3 !== 2) ||
+        index === emptySlot - 1 ||
+        index === emptySlot + 1
+      ) {
+        const newPieces = [...puzzlePieces];
+        [newPieces[index], newPieces[emptySlot]] = [
+          newPieces[emptySlot],
+          newPieces[index],
+        ];
+        setPuzzlePieces(newPieces);
+        setEmptySlot(index);
+        setScore(score + 1);
+      }
+    };
+
+    const isGameWon = () => {
+      for (let i = 0; i < puzzlePieces.length - 1; i++) {
+        if (puzzlePieces[i] !== i) {
+          return false;
         }
-
-        // Shuffle the tiles and find the blank tile index
-        const shuffledTiles = tiles.slice();
-        shuffledTiles.sort(() => Math.random() - 0.5);
-        const blankTileIndex = shuffledTiles.indexOf(tiles[tiles.length - 1]);
-        setTiles(shuffledTiles);
-        setBlankTileIndex(blankTileIndex);
-      };
-    }, [assetsUrl]);
-
-    const moveTile = (index) => {
-      // ... (unchanged)
+      }
+      return true;
     };
 
     return React.createElement(
       'div',
-      { className: "puzzle-game" },
-      // ... (unchanged)
+      { className: 'puzzle-game' },
+      React.createElement('h2', null, 'Puzzle Game'),
+      React.createElement('p', null, `Score: ${score}`),
+      React.createElement(
+        'div',
+        { className: 'puzzle-board' },
+        puzzlePieces.map((piece, index) =>
+          React.createElement(
+            'div',
+            {
+              key: index,
+              className: `puzzle-piece ${
+                piece === 8 ? 'empty' : ''
+              } ${piece === piece ? 'duplicate' : ''}`,
+              onClick: () => movePiece(index),
+            },
+            piece !== 8 &&
+              React.createElement('img', {
+                src: `${assetsUrl}/random-photo.jpg`,
+                alt: `Piece ${piece}`,
+                style: {
+                  objectPosition: `-${(piece % 3) * 33.33}% -${Math.floor(
+                    piece / 3
+                  ) * 33.33}%`,
+                },
+              })
+          )
+        )
+      ),
+      React.createElement(
+        'button',
+        { onClick: shufflePuzzle },
+        'Shuffle Puzzle'
+      ),
+      isGameWon() &&
+        React.createElement('div', { className: 'game-won' }, 'You won!')
     );
   };
 
