@@ -88,3 +88,5 @@ window.initPhotoPuzzle = (React, assetsUrl) => {
 
   return () => React.createElement(PhotoPuzzle, { assetsUrl: assetsUrl });
 };
+
+console.log('Photo Puzzle game script loaded');
