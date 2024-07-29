@@ -1,5 +1,3 @@
-// This would be stored in the 'src' folder of the GitHub repository
-// puzzle-game.js
 window.initGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
@@ -11,11 +9,11 @@ window.initGame = (React, assetsUrl) => {
     useEffect(() => {
       const initialTiles = Array(8).fill().map((_, i) => ({
         id: i,
-        image: `${assetsUrl}/image-${i}.jpg`
+        image: `${assetsUrl}/random-photo.jpg`
       }));
       const repeatedTile = {
         id: 8,
-        image: `${assetsUrl}/image-${Math.floor(Math.random() * 8)}.jpg`
+        image: `${assetsUrl}/random-photo.jpg`
       };
       const shuffledTiles = [...initialTiles, repeatedTile].sort(() => Math.random() - 0.5);
       setTiles(shuffledTiles);
@@ -25,7 +23,7 @@ window.initGame = (React, assetsUrl) => {
     const handleTileClick = (id) => {
       if (id === correctTile) {
         setScore(score + 1);
-        setTiles((prevTiles) => prevTiles.map((tile) => (tile.id === id ? { ...tile, image: `${assetsUrl}/image-${Math.floor(Math.random() * 8)}.jpg` } : tile)));
+        setTiles((prevTiles) => prevTiles.map((tile) => (tile.id === id ? { ...tile, image: `${assetsUrl}/random-photo.jpg` } : tile)));
         setCorrectTile(Math.floor(Math.random() * 9));
       }
     };
