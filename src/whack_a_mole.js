@@ -1,81 +1,107 @@
-window.initPuzzleGame = (React, assetsUrl) => {
+window.initGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
-  const PuzzleGame = ({ assetsUrl, imageUrl }) => {
-    const [pieces, setPieces] = useState([]);
-    const [correctPositions, setCorrectPositions] = useState([]);
-    const [isGameWon, setIsGameWon] = useState(false);
+  const PuzzleGame = () => {
+    const [puzzleGrid, setPuzzleGrid] = useState([]);
+    const [activePiece, setActivePiece] = useState(null);
+    const [solvedPieces, setSolvedPieces] = useState(0);
+    const [isShuffled, setIsShuffled] = useState(false);
 
-    useEffect(() => {
-      // Initialize the game
-      initGame(imageUrl);
-    }, [imageUrl]);
-
-    const initGame = (imageUrl) => {
-      // Divide the image into 9 pieces
-      const pieces = divideImage(imageUrl);
-
-      // Shuffle the pieces
-      shufflePieces(pieces);
-
-      setPieces(pieces);
-      setCorrectPositions(pieces.map((_, index) => index));
+    // Fonction pour initialiser la grille de puzzle
+    const initializePuzzle = () => {
+      const puzzleImage = new Image();
+      puzzleImage.src = `${assetsUrl}/puzzle-image.jpg`; // Remplacez par l'URL de votre image de puzzle
+      puzzleImage.onload = () => {
+        const width = puzzleImage.width / 3;
+        const height = puzzleImage.height / 3;
+        const grid = [];
+        for (let row = 0; row < 3; row++) {
+          for (let col = 0; col < 3; col++) {
+            grid.push({
+              id: `piece-${row * 3 + col}`,
+              left: col * width,
+              top: row * height,
+              width,
+              height,
+              position: { row, col },
+            });
+          }
+        }
+        setPuzzleGrid(grid);
+      };
     };
 
-    const divideImage = (imageUrl) => {
-      // Code to divide the image into 9 equal parts and return an array of the parts
-      // This could involve creating a canvas element, drawing the image on it, and then extracting the parts
+    // Fonction pour mélanger les pièces de puzzle
+    const shufflePuzzle = () => {
+      const shuffledGrid = [...puzzleGrid].sort(() => Math.random() - 0.5);
+      setPuzzleGrid(shuffledGrid);
+      setIsShuffled(true);
     };
 
-    const shufflePieces = (pieces) => {
-      // Code to randomly shuffle the order of the pieces in the array
-      // This could involve using the Fisher-Yates shuffle algorithm
-    };
-
-    const handlePieceClick = (index) => {
-      // Code to handle the user clicking on a puzzle piece
-      // This could involve swapping the clicked piece with the empty space
-      // and then checking if the puzzle has been solved
-    };
-
-    const checkGameWin = () => {
-      // Code to check if the puzzle has been solved
-      // This could involve comparing the current positions of the pieces
-      // with the correct positions
-      if (JSON.stringify(pieces) === JSON.stringify(correctPositions)) {
-        setIsGameWon(true);
+    // Fonction pour gérer le clic sur une pièce
+    const handlePieceClick = (piece) => {
+      if (activePiece === null) {
+        setActivePiece(piece);
+      } else if (
+        activePiece.position.row === piece.position.row &&
+        activePiece.position.col === piece.position.col
+      ) {
+        setActivePiece(null);
+        setSolvedPieces((prevSolved) => prevSolved + 1);
+      } else {
+        setActivePiece(null);
       }
     };
 
+    useEffect(() => {
+      initializePuzzle();
+    }, []);
+
     return React.createElement(
       'div',
-      { className: 'puzzle-game' },
-      React.createElement('h2', null, 'Puzzle Game'),
-      isGameWon
-        ? React.createElement('p', null, 'You won!')
-        : React.createElement(
+      { className: 'puzzle-container' },
+      React.createElement(
+        'div',
+        { className: 'puzzle-grid' },
+        puzzleGrid.map((piece) =>
+          React.createElement(
             'div',
-            { className: 'puzzle-board' },
-            pieces.map((piece, index) =>
-              React.createElement(
-                'div',
-                {
-                  key: index,
-                  className: `puzzle-piece ${
-                    pieces[index] === pieces[correctPositions[index]]
-                      ? 'correct'
-                      : ''
-                  }`,
-                  onClick: () => handlePieceClick(index)
-                },
-                React.createElement('img', { src: piece, alt: `Piece ${index}` })
-              )
-            )
+            {
+              key: piece.id,
+              className: `puzzle-piece ${activePiece === piece ? 'active' : ''} ${
+                solvedPieces === 9 ? 'solved' : ''
+              }`,
+              style: {
+                left: piece.left,
+                top: piece.top,
+                width: piece.width,
+                height: piece.height,
+                backgroundImage: `url(${assetsUrl}/puzzle-image.jpg)`,
+                backgroundPosition: `-${piece.left}px -${piece.top}px`,
+              },
+              onClick: () => handlePieceClick(piece),
+            },
+            null
           )
+        )
+      ),
+      React.createElement(
+        'button',
+        {
+          className: 'shuffle-button',
+          onClick: shufflePuzzle,
+          disabled: solvedPieces === 9,
+        },
+        'Mélanger le puzzle'
+      ),
+      solvedPieces === 9 &&
+        React.createElement(
+          'div',
+          { className: 'puzzle-solved' },
+          'Félicitations ! Vous avez résolu le puzzle.'
+        )
     );
   };
 
-  return () => React.createElement(PuzzleGame, { assetsUrl: assetsUrl, imageUrl: `${assetsUrl}/image.jpg` });
+  return PuzzleGame;
 };
-
-console.log('Puzzle game script loaded');
