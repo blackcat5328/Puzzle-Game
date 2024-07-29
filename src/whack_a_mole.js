@@ -1,79 +1,79 @@
+// puzzle-game.js
 window.initGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
-  const PuzzleGame = () => {
-    const [puzzleGrid, setPuzzleGrid] = useState([]);
-    const [activePiece, setActivePiece] = useState(null);
-    const [solvedPieces, setSolvedPieces] = useState(0);
+  const PuzzleGame = ({ assetsUrl }) => {
+    const [score, setScore] = useState(0);
+    const [tiles, setTiles] = useState([]);
+    const [emptyTileIndex, setEmptyTileIndex] = useState(8);
 
-    // Function to initialize the puzzle grid
-    const initializePuzzle = () => {
-      const puzzleImage = new Image();
-      puzzleImage.src = `${assetsUrl}/puzzle-image.jpg`; // Replace with your puzzle image URL
-      puzzleImage.onload = () => {
-        const width = puzzleImage.width / 3;
-        const height = puzzleImage.height / 3;
-        const grid = [];
-        for (let row = 0; row < 3; row++) {
-          for (let col = 0; col < 3; col++) {
-            grid.push({
-              id: `piece-${row * 3 + col}`,
-              left: col * width,
-              top: row * height,
-              width,
-              height,
-              position: { row, col },
-            });
+    useEffect(() => {
+      // Initialize the puzzle tiles
+      const tiles = Array(9).fill().map((_, index) => ({
+        image: `${assetsUrl}/random-photo-${index + 1}.jpg`,
+        index
+      }));
+
+      // Randomly swap the tiles
+      for (let i = tiles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+      }
+
+      // Find the empty tile index
+      const emptyTileIndex = tiles.findIndex((tile) => tile.index === 8);
+      setTiles(tiles);
+      setEmptyTileIndex(emptyTileIndex);
+    }, []);
+
+    const swapTiles = (index) => {
+      if (Math.abs(index - emptyTileIndex) === 3 || Math.abs(index - emptyTileIndex) === 1) {
+        const newTiles = [...tiles];
+        [newTiles[index], newTiles[emptyTileIndex]] = [newTiles[emptyTileIndex], newTiles[index]];
+        setTiles(newTiles);
+        setEmptyTileIndex(index);
+
+        // Check if the puzzle is solved
+        if (newTiles.every((tile, i) => tile.index === i)) {
+          setScore(score + 1);
+
+          // Randomly swap the tiles again
+          for (let i = newTiles.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newTiles[i], newTiles[j]] = [newTiles[j], newTiles[i]];
           }
-        }
-        setPuzzleGrid(grid);
-      };
-    };
 
-    // Function to handle piece click
-    const handlePieceClick = (piece) => {
-      if (activePiece === null) {
-        setActivePiece(piece);
-      } else if (
-        activePiece.position.row === piece.position.row &&
-        activePiece.position.col === piece.position.col
-      ) {
-        setActivePiece(null);
-        setSolvedPieces((prevSolved) => prevSolved + 1);
-      } else {
-        setActivePiece(null);
+          const newEmptyTileIndex = newTiles.findIndex((tile) => tile.index === 8);
+          setTiles(newTiles);
+          setEmptyTileIndex(newEmptyTileIndex);
+        }
       }
     };
 
-    useEffect(() => {
-      initializePuzzle();
-    }, []);
-
-    return (
-      <div className="puzzle-container">
-        {puzzleGrid.map((piece) => (
-          <div
-            key={piece.id}
-            className={`puzzle-piece ${activePiece === piece ? 'active' : ''} ${
-              solvedPieces === 9 ? 'solved' : ''
-            }`}
-            style={{
-              left: piece.left,
-              top: piece.top,
-              width: piece.width,
-              height: piece.height,
-              backgroundImage: `url(${assetsUrl}/puzzle-image.jpg)`,
-              backgroundPosition: `-${piece.left}px -${piece.top}px`,
-            }}
-            onClick={() => handlePieceClick(piece)}
-          />
-        ))}
-        {solvedPieces === 9 && (
-          <div className="puzzle-solved">Congratulations! You solved the puzzle.</div>
-        )}
-      </div>
+    return React.createElement(
+      'div',
+      { className: "puzzle-game" },
+      React.createElement('h2', null, "Puzzle Game"),
+      React.createElement('p', null, `Score: ${score}`),
+      React.createElement(
+        'div',
+        { className: "game-board" },
+        tiles.map((tile, index) =>
+          React.createElement(
+            'div',
+            {
+              key: index,
+              className: `tile ${index === emptyTileIndex ? 'empty' : ''}`,
+              onClick: () => swapTiles(index)
+            },
+            index !== emptyTileIndex && React.createElement('img', { src: tile.image, alt: `Tile ${index}` })
+          )
+        )
+      )
     );
   };
 
-  return PuzzleGame;
+  return () => React.createElement(PuzzleGame, { assetsUrl: assetsUrl });
 };
+
+console.log('Puzzle Game script loaded');
