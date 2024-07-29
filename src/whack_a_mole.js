@@ -19,7 +19,7 @@ window.initGame = (React, assetsUrl) => {
 
     const generatePuzzlePieces = () => {
       // Fetch a random photo from Unsplash or use a predefined one
-      const randomPhoto = `${assetsUrl}/random-photo.jpg`;
+      const randomPhoto = `${assetsUrl}/puzzle-image.jpg`;
 
       // Divide the photo into 9 puzzle pieces
       const puzzlePieces = [];
