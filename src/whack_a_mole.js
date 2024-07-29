@@ -9,7 +9,7 @@ window.initGame = (React, assetsUrl) => {
     // Function to initialize the puzzle grid
     const initializePuzzle = () => {
       const puzzleImage = new Image();
-      puzzleImage.src = `${assetsUrl}/mole.png`; // Replace with your puzzle image URL
+      puzzleImage.src = `${assetsUrl}/puzzle-image.jpg`; // Replace with your puzzle image URL
       puzzleImage.onload = () => {
         const width = puzzleImage.width / 3;
         const height = puzzleImage.height / 3;
