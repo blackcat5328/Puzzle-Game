@@ -4,11 +4,37 @@ window.initGame = (React, assetsUrl) => {
   const WhackAMole = ({ assetsUrl }) => {
     const [score, setScore] = useState(0);
     const [activeMole, setActiveMole] = useState(null);
+    const [imageParts, setImageParts] = useState([]);
 
     useEffect(() => {
       const interval = setInterval(() => {
         setActiveMole(Math.floor(Math.random() * 9));
       }, 1000);
+
+      // Load the image and divide it into 9 parts
+      const img = new Image();
+      img.src = `${assetsUrl}/source-image.jpg`;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        const partWidth = img.width / 3;
+        const partHeight = img.height / 3;
+
+        const parts = [];
+        for (let y = 0; y < 3; y++) {
+          for (let x = 0; x < 3; x++) {
+            const imageData = ctx.getImageData(x * partWidth, y * partHeight, partWidth, partHeight);
+            parts.push(imageData);
+          }
+        }
+
+        setImageParts(parts);
+      };
+
       return () => clearInterval(interval);
     }, []);
 
@@ -35,7 +61,10 @@ window.initGame = (React, assetsUrl) => {
               className: `mole ${index === activeMole ? 'active' : ''}`,
               onClick: () => whackMole(index)
             },
-            index === activeMole && React.createElement('img', { src: `${assetsUrl}/mole.png`, alt: "Mole" })
+            index === activeMole && imageParts[index] && React.createElement('img', {
+              src: `data:image/png;base64,${btoa(String.fromCharCode(...new Uint8Array(imageParts[index].data)))}`,
+              alt: "Part of the image"
+            })
           )
         )
       )
