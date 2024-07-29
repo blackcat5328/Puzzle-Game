@@ -5,6 +5,7 @@ window.initGame = (React, assetsUrl) => {
     const [puzzleGrid, setPuzzleGrid] = useState([]);
     const [activePiece, setActivePiece] = useState(null);
     const [solvedPieces, setSolvedPieces] = useState(0);
+    const [isShuffled, setIsShuffled] = useState(false);
 
     // Function to initialize the puzzle grid
     const initializePuzzle = () => {
@@ -28,6 +29,13 @@ window.initGame = (React, assetsUrl) => {
         }
         setPuzzleGrid(grid);
       };
+    };
+
+    // Function to shuffle the puzzle pieces
+    const shufflePuzzle = () => {
+      const shuffledGrid = [...puzzleGrid].sort(() => Math.random() - 0.5);
+      setPuzzleGrid(shuffledGrid);
+      setIsShuffled(true);
     };
 
     // Function to handle piece click
@@ -76,6 +84,15 @@ window.initGame = (React, assetsUrl) => {
             null
           )
         )
+      ),
+      React.createElement(
+        'button',
+        {
+          className: 'shuffle-button',
+          onClick: shufflePuzzle,
+          disabled: solvedPieces === 9,
+        },
+        'Shuffle Puzzle'
       ),
       solvedPieces === 9 &&
         React.createElement(
