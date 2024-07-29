@@ -49,36 +49,29 @@ window.initGame = (React, assetsUrl) => {
       initializePuzzle();
     }, []);
 
-    return React.createElement(
-      'div',
-      { className: 'puzzle-container' },
-      puzzleGrid.map((piece) =>
-        React.createElement(
-          'div',
-          {
-            key: piece.id,
-            className: `puzzle-piece ${activePiece === piece ? 'active' : ''} ${
+    return (
+      <div className="puzzle-container">
+        {puzzleGrid.map((piece) => (
+          <div
+            key={piece.id}
+            className={`puzzle-piece ${activePiece === piece ? 'active' : ''} ${
               solvedPieces === 9 ? 'solved' : ''
-            }`,
-            style: {
+            }`}
+            style={{
               left: piece.left,
               top: piece.top,
               width: piece.width,
               height: piece.height,
               backgroundImage: `url(${assetsUrl}/puzzle-image.jpg)`,
               backgroundPosition: `-${piece.left}px -${piece.top}px`,
-            },
-            onClick: () => handlePieceClick(piece),
-          },
-          null
-        )
-      ),
-      solvedPieces === 9 &&
-        React.createElement(
-          'div',
-          { className: 'puzzle-solved' },
-          'Congratulations! You solved the puzzle.'
-        )
+            }}
+            onClick={() => handlePieceClick(piece)}
+          />
+        ))}
+        {solvedPieces === 9 && (
+          <div className="puzzle-solved">Congratulations! You solved the puzzle.</div>
+        )}
+      </div>
     );
   };
 
