@@ -1,70 +1,107 @@
-// puzzle-game.js
+window.initGame = (React, assetsUrl) => {
+  const { useState, useEffect } = React;
 
-// Function to divide the image into 9 parts
-function divideImage(imageElement) {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = imageElement.width;
-  canvas.height = imageElement.height;
-  ctx.drawImage(imageElement, 0, 0);
+  const PuzzleGame = () => {
+    const [puzzleGrid, setPuzzleGrid] = useState([]);
+    const [activePiece, setActivePiece] = useState(null);
+    const [solvedPieces, setSolvedPieces] = useState(0);
+    const [isShuffled, setIsShuffled] = useState(false);
 
-  const parts = [];
-  const partWidth = canvas.width / 3;
-  const partHeight = canvas.height / 3;
+    // Fonction pour initialiser la grille de puzzle
+    const initializePuzzle = () => {
+      const puzzleImage = new Image();
+      puzzleImage.src = `${assetsUrl}/puzzle-image.jpg`; // Remplacez par l'URL de votre image de puzzle
+      puzzleImage.onload = () => {
+        const width = puzzleImage.width / 3;
+        const height = puzzleImage.height / 3;
+        const grid = [];
+        for (let row = 0; row < 3; row++) {
+          for (let col = 0; col < 3; col++) {
+            grid.push({
+              id: `piece-${row * 3 + col}`,
+              left: col * width,
+              top: row * height,
+              width,
+              height,
+              position: { row, col },
+            });
+          }
+        }
+        setPuzzleGrid(grid);
+      };
+    };
 
-  for (let y = 0; y < 3; y++) {
-    for (let x = 0; x < 3; x++) {
-      const partCanvas = document.createElement('canvas');
-      partCanvas.width = partWidth;
-      partCanvas.height = partHeight;
-      partCanvas.getContext('2d').drawImage(
-        canvas,
-        x * partWidth, y * partHeight,
-        partWidth, partHeight,
-        0, 0,
-        partWidth, partHeight
-      );
-      parts.push(partCanvas);
-    }
-  }
+    // Fonction pour mélanger les pièces de puzzle
+    const shufflePuzzle = () => {
+      const shuffledGrid = [...puzzleGrid].sort(() => Math.random() - 0.5);
+      setPuzzleGrid(shuffledGrid);
+      setIsShuffled(true);
+    };
 
-  return parts;
-}
+    // Fonction pour gérer le clic sur une pièce
+    const handlePieceClick = (piece) => {
+      if (activePiece === null) {
+        setActivePiece(piece);
+      } else if (
+        activePiece.position.row === piece.position.row &&
+        activePiece.position.col === piece.position.col
+      ) {
+        setActivePiece(null);
+        setSolvedPieces((prevSolved) => prevSolved + 1);
+      } else {
+        setActivePiece(null);
+      }
+    };
 
-// Function to shuffle the image parts
-function shuffleParts(parts) {
-  for (let i = parts.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [parts[i], parts[j]] = [parts[j], parts[i]];
-  }
-  return parts;
-}
+    useEffect(() => {
+      initializePuzzle();
+    }, []);
 
-// Function to combine the shuffled parts back into the original image
-function combineParts(parts) {
-  const canvas = document.createElement('canvas');
-  canvas.width = parts[0].width * 3;
-  canvas.height = parts[0].height * 3;
-  const ctx = canvas.getContext('2d');
+    return React.createElement(
+      'div',
+      { className: 'puzzle-container' },
+      React.createElement(
+        'div',
+        { className: 'puzzle-grid' },
+        puzzleGrid.map((piece) =>
+          React.createElement(
+            'div',
+            {
+              key: piece.id,
+              className: `puzzle-piece ${activePiece === piece ? 'active' : ''} ${
+                solvedPieces === 9 ? 'solved' : ''
+              }`,
+              style: {
+                left: piece.left,
+                top: piece.top,
+                width: piece.width,
+                height: piece.height,
+                backgroundImage: `url(${assetsUrl}/puzzle-image.jpg)`,
+                backgroundPosition: `-${piece.left}px -${piece.top}px`,
+              },
+              onClick: () => handlePieceClick(piece),
+            },
+            null
+          )
+        )
+      ),
+      React.createElement(
+        'button',
+        {
+          className: 'shuffle-button',
+          onClick: shufflePuzzle,
+          disabled: solvedPieces === 9,
+        },
+        'Mélanger le puzzle'
+      ),
+      solvedPieces === 9 &&
+        React.createElement(
+          'div',
+          { className: 'puzzle-solved' },
+          'Félicitations ! Vous avez résolu le puzzle.'
+        )
+    );
+  };
 
-  let partIndex = 0;
-  for (let y = 0; y < 3; y++) {
-    for (let x = 0; x < 3; x++) {
-      ctx.drawImage(parts[partIndex], x * parts[0].width, y * parts[0].height);
-      partIndex++;
-    }
-  }
-
-  return canvas.toDataURL();
-}
-
-// Example usage
-const imageElement = document.getElementById('puzzle-image');
-const parts = divideImage(imageElement);
-const shuffledParts = shuffleParts(parts);
-const combinedImageData = combineParts(shuffledParts);
-
-// Display the combined image
-const combinedImageElement = new Image();
-combinedImageElement.src = combinedImageData;
-document.body.appendChild(combinedImageElement);
+  return PuzzleGame;
+};
