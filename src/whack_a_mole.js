@@ -1,4 +1,3 @@
-// puzzle-game.js
 window.initGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
@@ -6,11 +5,12 @@ window.initGame = (React, assetsUrl) => {
     const [score, setScore] = useState(0);
     const [tiles, setTiles] = useState([]);
     const [emptyTileIndex, setEmptyTileIndex] = useState(8);
+    const [currentPhoto, setCurrentPhoto] = useState(1);
 
     useEffect(() => {
       // Initialize the puzzle tiles
       const tiles = Array(9).fill().map((_, index) => ({
-        image: `${assetsUrl}/random-photo-${index + 1}.jpg`,
+        image: `${assetsUrl}/random-photo-${currentPhoto}.jpg`,
         index
       }));
 
@@ -24,7 +24,7 @@ window.initGame = (React, assetsUrl) => {
       const emptyTileIndex = tiles.findIndex((tile) => tile.index === 8);
       setTiles(tiles);
       setEmptyTileIndex(emptyTileIndex);
-    }, []);
+    }, [currentPhoto]);
 
     const swapTiles = (index) => {
       if (Math.abs(index - emptyTileIndex) === 3 || Math.abs(index - emptyTileIndex) === 1) {
@@ -37,15 +37,8 @@ window.initGame = (React, assetsUrl) => {
         if (newTiles.every((tile, i) => tile.index === i)) {
           setScore(score + 1);
 
-          // Randomly swap the tiles again
-          for (let i = newTiles.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [newTiles[i], newTiles[j]] = [newTiles[j], newTiles[i]];
-          }
-
-          const newEmptyTileIndex = newTiles.findIndex((tile) => tile.index === 8);
-          setTiles(newTiles);
-          setEmptyTileIndex(newEmptyTileIndex);
+          // Load the next photo
+          setCurrentPhoto(currentPhoto + 1);
         }
       }
     };
