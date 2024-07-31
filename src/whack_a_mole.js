@@ -1,4 +1,4 @@
-// puzzle-game.js test
+// puzzle-game.js
 window.initGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
