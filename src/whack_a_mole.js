@@ -1,4 +1,4 @@
-// puzzle-game.js test
+// puzzle-game.js
 window.initGame = (React, assetsUrl) => {
   const { useState, useEffect } = React;
 
@@ -6,6 +6,7 @@ window.initGame = (React, assetsUrl) => {
     const [score, setScore] = useState(0);
     const [tiles, setTiles] = useState([]);
     const [emptyTileIndex, setEmptyTileIndex] = useState(8);
+    const [time, setTime] = useState(0); // Add time state
 
     useEffect(() => {
       // Initialize the puzzle tiles
@@ -24,7 +25,15 @@ window.initGame = (React, assetsUrl) => {
       const emptyTileIndex = tiles.findIndex((tile) => tile.index === 8);
       setTiles(tiles);
       setEmptyTileIndex(emptyTileIndex);
-    }, []);
+
+      // Start the game timer
+      const interval = setInterval(() => {
+        setTime((prevTime) => prevTime + 1);
+      }, 1000);
+
+      // Clean up the interval when the component unmounts
+      return () => clearInterval(interval);
+    }, [assetsUrl]);
 
     const swapTiles = (index) => {
       if (Math.abs(index - emptyTileIndex) === 3 || Math.abs(index - emptyTileIndex) === 1) {
@@ -50,26 +59,23 @@ window.initGame = (React, assetsUrl) => {
       }
     };
 
-    return React.createElement(
-      'div',
-      { className: "puzzle-game" },
-      React.createElement('h2', null, "Puzzle Game"),
-      React.createElement('p', null, `Score: ${score}`),
-      React.createElement(
-        'div',
-        { className: "game-board" },
-        tiles.map((tile, index) =>
-          React.createElement(
-            'div',
-            {
-              key: index,
-              className: `tile ${index === emptyTileIndex ? 'empty' : ''}`,
-              onClick: () => swapTiles(index)
-            },
-            index !== emptyTileIndex && React.createElement('img', { src: tile.image, alt: `Tile ${index}` })
-          )
-        )
-      )
+    return (
+      <div className="puzzle-game">
+        <h2>Puzzle Game</h2>
+        <p>Score: {score}</p>
+        <p>Time: {time} seconds</p> {/* Display the game time */}
+        <div className="game-board">
+          {tiles.map((tile, index) =>
+            <div
+              key={index}
+              className={`tile ${index === emptyTileIndex ? 'empty' : ''}`}
+              onClick={() => swapTiles(index)}
+            >
+              {index !== emptyTileIndex && <img src={tile.image} alt={`Tile ${index}`} />}
+            </div>
+          )}
+        </div>
+      </div>
     );
   };
 
